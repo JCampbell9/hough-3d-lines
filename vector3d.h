@@ -12,6 +12,8 @@
 
 #include <iostream>
 
+namespace hough3d
+{
 class Vector3d {
 public:
   double x;
@@ -42,5 +44,6 @@ Vector3d operator*(Vector3d x, double c);
 Vector3d operator*(double c, Vector3d x);
 Vector3d operator/(Vector3d x, double c);
 
+}
 
 #endif /* VECTOR3D_H_ */

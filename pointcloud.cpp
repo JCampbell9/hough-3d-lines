@@ -12,6 +12,8 @@
 #include <math.h>
 #include <string>
 
+namespace hough3d
+{
 
 // translate point cloud so that center = origin
 // total shift applied to this point cloud is stored in this->shift
@@ -23,6 +25,16 @@ void PointCloud::shiftToOrigin(){
     points[i] = points[i] - newshift;
   }
   shift = shift + newshift;
+}
+
+void PointCloud::shiftPCD(Vector3d shift){
+  Vector3d p1, p2, newshift;
+  // this->getMinMax3D(&p1, &p2);
+  // newshift = (p1 + p2) / 2.0;
+  for(size_t i=0; i < points.size(); i++){
+    points[i] = points[i] + shift;
+  }
+
 }
 
 // mean value of all points (center of gravity)
@@ -125,4 +137,6 @@ void PointCloud::removePoints(const PointCloud &Y){
     newpoints.push_back(points[i]);
 
   points = newpoints;
+}
+
 }

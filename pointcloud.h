@@ -14,6 +14,9 @@
 #include <vector>
 #include <string>
 
+namespace hough3d
+{
+
 class PointCloud {
 public:
   // translation of pointCloud as done by shiftToOrigin()
@@ -23,6 +26,8 @@ public:
 
   // translate point cloud so that center = origin
   void shiftToOrigin();
+  // freely shift the points
+  void shiftPCD(Vector3d shift);
   // mean value of all points (center of gravity)
   Vector3d meanValue() const;
   // bounding box corners
@@ -37,6 +42,6 @@ public:
   void removePoints(const PointCloud &Y);
 };
 
-
+}
 
 #endif /* POINTCLOUD_H_ */

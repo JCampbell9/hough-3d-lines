@@ -9,7 +9,7 @@
 
 #include "vector3d.h"
 #include <math.h>
-
+namespace hough3d{
 Vector3d::Vector3d() {
   x = 0; y = 0; z = 0;
 }
@@ -70,4 +70,5 @@ Vector3d operator*(double c, Vector3d x) {
 Vector3d operator/(Vector3d x, double c) {
   Vector3d v(x.x/c, x.y/c, x.z/c);
   return v;
+}
 }

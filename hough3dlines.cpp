@@ -10,16 +10,20 @@
 #include "vector3d.h"
 #include "pointcloud.h"
 #include "hough.h"
+#include "hough3dlines.h"
 
 #include <cstdlib>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
 #include <Eigen/Dense>
+// #include <Eigen/Geometry>
 
 using Eigen::MatrixXf;
 using namespace std;
 
+namespace hough3d
+{
 // usage message
 const char* usage = "Usage:\n"
   "\though3dlines [options] <infile>\n"
@@ -96,16 +100,16 @@ int main(int argc, char ** argv) {
 
   // number of icosahedron subdivisions for direction discretization
   int granularity = 4;
-  int num_directions[7] = {12, 21, 81, 321, 1281, 5121, 20481};
+  // int num_directions[7] = {12, 21, 81, 321, 1281, 5121, 20481};
 
   // IO files
   //FILE* infile = NULL;
   FILE* outfile = stdout;
 
-  // bounding box of point cloud
-  Vector3d minP, maxP, minPshifted, maxPshifted;
-  // diagonal length of point cloud
-  double d;
+  // // bounding box of point cloud
+  // Vector3d minP, maxP, minPshifted, maxPshifted;
+  // // diagonal length of point cloud
+  // double d;
 
   // parse command line
   for (int i=1; i<argc; i++) {
@@ -197,12 +201,29 @@ int main(int argc, char ** argv) {
     return 1;
   }
 
+  return 0;
+}
+
+
+std::pair<std::vector<std::pair<std::array<Vector3d, 2>, PointCloud>>, Vector3d> hough3dlines(PointCloud X, double opt_dx, int granularity, int opt_nlines, int opt_minvotes, int opt_verbose){
+
+  int num_directions[7] = {12, 21, 81, 321, 1281, 5121, 20481};
+    // bounding box of point cloud
+  Vector3d minP, maxP, minPshifted, maxPshifted;
+  std::vector<PointCloud> stored_pcd_points;
+  // std::vector<array<Vector3d, 2>> stored_lines;
+  // diagonal length of point cloud
+
+  std::vector<std::pair<std::array<Vector3d, 2>, PointCloud>> segmented_pcd;
+  double d;
+
+
   // center cloud and compute new bounding box
   X.getMinMax3D(&minP, &maxP);
   d = (maxP-minP).norm();
   if (d == 0.0) {
     fprintf(stderr, "Error: all points in point cloud identical\n");
-    return 1;
+    // return 1; //TODO fix this
   }
   X.shiftToOrigin();
   X.getMinMax3D(&minPshifted, &maxPshifted);
@@ -213,9 +234,10 @@ int main(int argc, char ** argv) {
   }
   else if (opt_dx >= d) {
     fprintf(stderr, "Error: dx too large\n");
-    return 1;
+    // return 1; //TODO fix this 
   }
   double num_x = floor(d / opt_dx + 0.5);
+  // double num_x = 128; //TODO add lattice as a parameter
   double num_cells = num_x * num_x * num_directions[granularity];
   if (opt_verbose) {
     printf("info: x'y' value range is %f in %.0f steps of width dx=%f\n",
@@ -239,27 +261,10 @@ int main(int argc, char ** argv) {
     fprintf(stderr, "Error: cannot allocate memory for %.0f Hough cells"
             " (%.2f MB)\n", num_cells, 
             (double(num_cells) / 1000000.0) * sizeof(unsigned int));
-    return 2;
+    // return 2; //TODO fix this
   }
   hough->add(X);
 
-  // print header info if necessary
-  if (opt_outformat == format_gnuplot) {
-    fprintf(outfile, "set datafile separator '%c'\n"
-            "set parametric\n"
-            "set xrange [%f:%f]\n"
-            "set yrange [%f:%f]\n"
-            "set zrange [%f:%f]\n"
-            "set urange [%f:%f]\n"
-            "splot '%s' using 1:2:3 with points palette",
-            opt_delim,
-            minP.x, maxP.x, minP.y, maxP.y, minP.z, maxP.z,
-            -d, d, infile_name);
-  }
-  else if (opt_outformat == format_raw) {
-    fprintf(outfile, "%f %f %f %f %f %f\n%f %f\n",
-            minP.x, maxP.x, minP.y, maxP.y, minP.z, maxP.z, -d, d);
-  }
   
   // iterative Hough transform
   // (Algorithm 1 in IPOL paper)
@@ -268,6 +273,7 @@ int main(int argc, char ** argv) {
   unsigned int nvotes;
   int nlines = 0;
   do {
+    // std::pair<std::array<Vector3d, 2>, PointCloud> pcd_line_pair;
     Vector3d a; // anchor point of line
     Vector3d b; // direction of line
 
@@ -294,35 +300,26 @@ int main(int argc, char ** argv) {
     if (rc==0.0) break;
 
     a = a + X.shift;
+    
 
     nlines++;
-    if (opt_outformat == format_normal) {
-      fprintf(outfile, "npoints=%lu, a=(%f,%f,%f), b=(%f,%f,%f)\n",
-              Y.points.size(), a.x, a.y, a.z, b.x, b.y, b.z);
-    }
-    else if (opt_outformat == format_gnuplot) {
-      fputs(", \\\n    ", outfile);
-      fprintf(outfile, "%f + u * %f, %f + u * %f, %f + u * %f "
-              "with lines notitle lc rgb 'black'",
-              a.x, b.x, a.y, b.y, a.z, b.z);
-    }
-    else {
-      fprintf(outfile, "%f %f %f %f %f %f %lu\n",
-              a.x, a.y, a.z, b.x, b.y, b.z, Y.points.size());
-    }
 
+    
+
+    // Y.shiftPCD(X.shift);
+    std::array<Vector3d, 2> temp_line = {a, b};
+    segmented_pcd.push_back(std::make_pair(temp_line, Y));
+    std::cout<< X.shift <<std::endl;
     X.removePoints(Y);
+    // PointCloud copy_pcd = Y;
+
+    // copy_pcd.shiftPCD(X.shift);
+
 
   } while ((X.points.size() > 1) && 
            ((opt_nlines == 0) || (opt_nlines > nlines)));
 
-  // final newline in gnuplot command
-  if (opt_outformat == format_gnuplot)
-    fputs("\n", outfile);
-  
-  // clean up
-  delete hough;
-  if (outfile_name) fclose(outfile);
-
-  return 0;
+  // X.shiftPCD(X.shift);
+  return std::make_pair(segmented_pcd, X.shift);
+};
 }

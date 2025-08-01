@@ -12,7 +12,8 @@
 
 #include <cstdlib>
 
-
+namespace hough3d
+{
 static double roundToNearest(double num) {
   return (num > 0.0) ? floor(num + 0.5) : ceil(num - 0.5);
 }
@@ -33,6 +34,7 @@ Hough::Hough(const Vector3d& minP, const Vector3d& maxP, double var_dx,
     dx = range_x / 64.0;
   }
   num_x = roundToNearest(range_x / dx);
+  // num_x = 128;
 
   // allocate voting space
   VotingSpace.resize(num_x * num_x * num_b);
@@ -128,4 +130,5 @@ unsigned int Hough::getLine(Vector3d* a, Vector3d* b){
   a->z = - x * b->x - y * b->y;
 
   return votes;
+}
 }

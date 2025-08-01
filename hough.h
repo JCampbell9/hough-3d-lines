@@ -17,6 +17,9 @@
 #include <vector>
 #include <deque>
 
+namespace hough3d{
+
+
 class Hough {
 public:
   // accumulator array A
@@ -44,5 +47,7 @@ private:
   void pointVote(const Vector3d& point, bool add);
 
 };
+}
+
 
 #endif /* HOUGH_H_ */

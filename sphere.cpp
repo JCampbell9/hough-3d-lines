@@ -13,6 +13,7 @@
 
 #include <math.h>
 
+namespace hough3d{
 
 // creates the directions by subdivisions of icosahedron
 void Sphere::fromIcosahedron(int subDivisions){
@@ -329,5 +330,5 @@ void Sphere::makeUnique(){
   }
 }
 
-
+}
 

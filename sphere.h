@@ -15,7 +15,7 @@
 #include "vector3d.h"
 #include <vector>
 #include <deque>
-
+namespace hough3d{
 class Sphere {
 
 public:
@@ -35,5 +35,5 @@ private:
   void makeUnique();
 
 };
-
+}
 #endif /* SPHERE_H_ */
