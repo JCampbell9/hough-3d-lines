@@ -16,7 +16,7 @@ find_package(ament_cmake REQUIRED)
 
 find_package(Eigen3 REQUIRED)
 
-add_library(${PROJECT_NAME} hough3dlines.cpp hough.cpp pointcloud.cpp sphere.cpp vector3d.cpp)
+add_library(${PROJECT_NAME} SHARED hough3dlines.cpp hough.cpp pointcloud.cpp sphere.cpp vector3d.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen)
 target_include_directories(${PROJECT_NAME}
   PUBLIC
