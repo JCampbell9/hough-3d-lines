@@ -309,7 +309,7 @@ std::pair<std::vector<std::pair<std::array<Vector3d, 2>, PointCloud>>, Vector3d>
     // Y.shiftPCD(X.shift);
     std::array<Vector3d, 2> temp_line = {a, b};
     segmented_pcd.push_back(std::make_pair(temp_line, Y));
-    std::cout<< X.shift <<std::endl;
+    // std::cout<< "x-shift values: " << X.shift <<std::endl;
     X.removePoints(Y);
     // PointCloud copy_pcd = Y;
 
